@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -18,6 +20,10 @@ public class DrawSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     private Thread mThread;
     private Ball mBall;
     private float[] mMove;
+    float[] gravity = new float[3];
+    float[] geomagnetic = new float[3];
+    float[] rotationMatrix = new float[9];
+    protected final static double RAD2DEG = 180/Math.PI;
 
     public DrawSurfaceView(Context context, Ball ball, float[] move) {
         super(context);
@@ -64,15 +70,37 @@ public class DrawSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if(event.sensor.getType() == Sensor.TYPE_GYROSCOPE){
-            /*
-             * Pitch -> y
-             * Roll -> x
-             */
-            float pitch = event.values[0];
-            float roll = event.values[1];
-            mMove[0] = roll;
-            mMove[1] = pitch;
+        switch (event.sensor.getType()) {
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                geomagnetic = event.values.clone();
+                break;
+
+            case Sensor.TYPE_ACCELEROMETER:
+                gravity = event.values.clone();
+                break;
+        }
+
+        if (geomagnetic != null && gravity != null) {
+            SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic); //回転角度を計算その1
+            SensorManager.getOrientation(rotationMatrix, mMove); //回転角度を計算その1
+            int pitch = 5 + (int) (mMove[2] * RAD2DEG);
+            int roll = 5 + (int) (mMove[1] * RAD2DEG);
+
+            if(pitch >= 50){
+                mMove[0] = 50;
+            } else if(-50 >= pitch){
+                mMove[0] = -50;
+            } else {
+                mMove[0] = pitch;
+            }
+
+            if(roll >= 50){
+                mMove[1] = 50;
+            } else if(-50 >= roll){
+                mMove[1] = -50;
+            } else {
+                mMove[1] = roll;
+            }
         }
     }
 

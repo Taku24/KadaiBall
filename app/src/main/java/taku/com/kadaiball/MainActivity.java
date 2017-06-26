@@ -10,9 +10,10 @@ import android.os.Bundle;
 public class MainActivity extends AppCompatActivity {
 
     private SensorManager mSensorManager;
-    private Sensor mGyrometer;
+    private Sensor mAccelerometer; //加速度センサー
+    private Sensor mMagneticField; //地磁気センサー
     private DrawSurfaceView view;
-    private float[] move = {5, 5};
+    private float[] move = new float[]{5, 5, 5};
     private Ball mBall;
 
     public MainActivity(){
@@ -25,13 +26,15 @@ public class MainActivity extends AppCompatActivity {
         view = new DrawSurfaceView(this, mBall, move);
         setContentView(view);
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        mGyrometer = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        mSensorManager.registerListener(view, mGyrometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(view, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(view, mMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
